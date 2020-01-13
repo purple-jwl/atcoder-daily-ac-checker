@@ -138,7 +138,7 @@ function postMessage(message: string): void {
     muteHttpExceptions: true,
     payload: JSON.stringify({
       username: 'AC褒め太郎',
-      icon_emoji: ':star-struck:',
+      icon_url: 'https://raw.githubusercontent.com/purple-jwl/atcoder-daily-ac-checker/master/img/icon.png',
       text: message
     })
   });
