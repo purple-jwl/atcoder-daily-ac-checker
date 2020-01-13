@@ -38,7 +38,7 @@ function main(): void {
   const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('管理表');
   const data = sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 2);
 
-  let result: UserInfo[] = [];
+  const result: UserInfo[] = [];
   data.forEach(row => {
     const atcoderId: string = row[0].trim();
     const name: string = row[1].trim();
@@ -119,6 +119,8 @@ function main(): void {
     postMessage('やってる！最高！褒めちゃう！');
 
     result.forEach((userInfo: UserInfo) => {
+      if (userInfo.name === '') return;
+
       const message = `${userInfo.name}++`;
       postMessage(message);
     });
