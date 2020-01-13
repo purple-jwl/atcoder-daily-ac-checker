@@ -127,13 +127,13 @@ function main(): void {
   }
 }
 
-function hello() {
+function hello(): void {
   postMessage('こんにちは！僕の名前はAC褒め太郎。競プロを楽しんでる人を応援するよ！');
 }
 
 function postMessage(message: string): void {
   const webhookUrl = PropertiesService.getScriptProperties().getProperty('WEBHOOK_URL');
-  const options: object = {
+  UrlFetchApp.fetch(webhookUrl, {
     method: 'post',
     muteHttpExceptions: true,
     payload: JSON.stringify({
@@ -141,8 +141,7 @@ function postMessage(message: string): void {
       icon_emoji: ':star-struck:',
       text: message
     })
-  };
-  const response = UrlFetchApp.fetch(webhookUrl, options);
+  });
 
   Utilities.sleep(500);
 }
