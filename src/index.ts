@@ -115,7 +115,7 @@ function main(): void {
       postMessage(messages.join('\n'));
     });
 
-    postMessage('やってる！最高！褒めちゃう！');
+    postMessage(`やってる！最高！引き続きやっていきましょう！\n（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
   }
 }
 
