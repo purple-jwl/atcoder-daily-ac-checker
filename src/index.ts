@@ -104,6 +104,8 @@ function main(): void {
     postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！`);
 
     result.forEach((userInfo: UserInfo) => {
+      if (userInfo.submissions.length === 0) return;
+
       const messages = [];
       messages.push(`*${userInfo.atcoderId}*`);
       messages.push(...(userInfo.submissions.map(submission => {
