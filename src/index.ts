@@ -96,12 +96,10 @@ function main(): void {
       atcoderId: atcoderId,
       submissions: acSubmissions
     })
-
-    Utilities.sleep(500);
   });
 
   if (result.length) {
-    postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！`);
+    postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
 
     result.forEach((userInfo: UserInfo) => {
       if (userInfo.submissions.length === 0) return;
@@ -115,7 +113,7 @@ function main(): void {
       postMessage(messages.join('\n'));
     });
 
-    postMessage(`やってる！最高！引き続きやっていきましょう！\n（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
+    postMessage('以上です。\n\nやってる！最高！引き続きやっていきましょう:fire:');
   }
 }
 
