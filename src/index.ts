@@ -74,7 +74,7 @@ function main(): void {
 
       if (!updated) {
         const problem = atcoderProblems.filter((problem: Problem) => {
-          return problem.contest_id === submission.contest_id;
+          return problem.id === submission.problem_id;
         })[0];
 
         acSubmissions.push({
