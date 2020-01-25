@@ -1,6 +1,11 @@
-interface UserInfo {
+interface MotivatedUser {
   atcoderId: string,
   submissions: AcSubmission[]
+}
+
+interface MoreMotivatedUser {
+  atcoderId: string,
+  targetAcceptedCount: number
 }
 
 interface AcSubmission {
@@ -38,19 +43,19 @@ function main(): void {
 
   const atcoderIds: string[] = data.map(row => row[0].trim());
 
-  const motivatedUsers = getMotivatedUsers(atcoderIds, targetDate);
+  const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds, targetDate);
 
   if (motivatedUsers.length) {
-    const moreMotivatedUsers = getMoreMotivatedUsers(atcoderIds);
+    const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
 
     postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
 
-    motivatedUsers.forEach((userInfo: UserInfo) => {
-      if (userInfo.submissions.length === 0) return;
+    motivatedUsers.forEach((motivatedUser: MotivatedUser) => {
+      if (motivatedUser.submissions.length === 0) return;
 
       const messages = [];
-      messages.push(`*${userInfo.atcoderId}*`);
-      messages.push(...(userInfo.submissions.map(submission => {
+      messages.push(`*${motivatedUser.atcoderId}*`);
+      messages.push(...(motivatedUser.submissions.map(submission => {
         return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード>`
       })));
 
@@ -90,9 +95,9 @@ function postMessage(message: string): void {
   Utilities.sleep(500);
 }
 
-function getMotivatedUsers(atcoderIds: string[], targetDate: string): any[] {
+function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedUser[] {
   const atcoderProblems = getAtcoderProblems();
-  const result: UserInfo[] = [];
+  const result: MotivatedUser[] = [];
 
   atcoderIds.forEach(atcoderId => {
     if (atcoderId === '') return;
@@ -155,7 +160,7 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): any[] {
   return result;
 }
 
-function getMoreMotivatedUsers(atcoderIds: string[]): any[] {
+function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
   const checkMark = '✅';
 
   const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
@@ -163,7 +168,7 @@ function getMoreMotivatedUsers(atcoderIds: string[]): any[] {
   const data = sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn());
   const masterData = data.shift();
 
-  const result = [];
+  const result: MoreMotivatedUser[] = [];
   atcoderIds.forEach(atcoderId => {
     const url = `https://kenkoooo.com/atcoder/atcoder-api/v2/user_info?user=${atcoderId}`;
     const response = UrlFetchApp.fetch(url, {
