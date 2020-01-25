@@ -37,10 +37,10 @@ function main(): void {
   const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('管理表');
   const data = sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 1);
 
-  const result: UserInfo[] = [];
-  data.forEach(row => {
-    const atcoderId: string = row[0].trim();
+  const atcoderIds: string[] = data.map(row => row[0].trim());
 
+  const result: UserInfo[] = [];
+  atcoderIds.forEach(atcoderId => {
     if (atcoderId === '') return;
 
     const url = `https://kenkoooo.com/atcoder/atcoder-api/results?user=${atcoderId}`;
@@ -98,6 +98,8 @@ function main(): void {
     })
   });
 
+  const result2 = getMoreMotivatedUsers(atcoderIds);
+
   if (result.length) {
     postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
 
@@ -114,6 +116,16 @@ function main(): void {
     });
 
     postMessage('以上です。\n\nやってる！最高！引き続きやっていきましょう:fire:');
+
+    if (result2.length) {
+      postMessage('--\n\n以上じゃなかった！\n\n今勢いのある人（たくさん解いてる人）も紹介しちゃうよ！');
+
+      result2.forEach(res => {
+        postMessage(`*${res.atcoderId}* ㊗️ *${res.targetAcceptedCount}* AC達成 👏`);
+      });
+
+      postMessage('今度こそ以上です。\n\nめっちゃやってる！やばいね？最＆高！');
+    }
   }
 }
 
@@ -134,6 +146,67 @@ function postMessage(message: string): void {
   });
 
   Utilities.sleep(500);
+}
+
+function getMoreMotivatedUsers(atcoderIds: string[]): any[] {
+  const checkMark = '✅';
+
+  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('AC記録用');
+  const data = sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn());
+  const masterData = data.shift();
+
+  const result = [];
+  atcoderIds.forEach(atcoderId => {
+    const url = `https://kenkoooo.com/atcoder/atcoder-api/v2/user_info?user=${atcoderId}`;
+    const response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      contentType: 'application/json',
+      muteHttpExceptions: true
+    });
+
+    if (response.getResponseCode() !== 200) return;
+
+    const currentAcceptedCount: number = JSON.parse(response.getContentText()).accepted_count;
+
+    let found = false;
+    let updatedMaxTargetAcceptedCount = -1;
+
+    for (let i = 0; i < data.length; i++) {
+      if (atcoderId !== data[i][0]) continue;
+
+      for (let j = 1; j < masterData.length; j++) {
+        const targetAcceptedCount: number = masterData[j];
+        if (data[i][j] === '' && targetAcceptedCount <= currentAcceptedCount) {
+          updatedMaxTargetAcceptedCount = Math.max(updatedMaxTargetAcceptedCount, targetAcceptedCount);
+          data[i][j] = checkMark;
+        }
+      }
+
+      found = true;
+      break;
+    }
+
+    if (!found) {
+      const d = [atcoderId];
+      for (let j = 1; j < masterData.length; j++) {
+        const targetAcceptedCount: number = masterData[j];
+        d.push((targetAcceptedCount <= currentAcceptedCount) ? checkMark : '');
+      }
+      data.push(d);
+    }
+
+    if (updatedMaxTargetAcceptedCount !== -1) {
+      result.push({
+        atcoderId: atcoderId,
+        targetAcceptedCount: updatedMaxTargetAcceptedCount
+      })
+    }
+  });
+
+  sheet.getRange(2, 1, data.length, sheet.getLastColumn()).setValues(data);
+
+  return result;
 }
 
 function getAtcoderProblems(): Problem[] {
