@@ -65,7 +65,7 @@ function main(): void {
     postMessage('以上です。\n\nやってる！最高！引き続きやっていきましょう:fire:');
 
     if (moreMotivatedUsers.length) {
-      postMessage('--\n\n以上じゃなかった！\n\n今勢いのある人（たくさん解いてる人）も紹介しちゃうよ！');
+      postMessage('--\n\n...以上じゃなかった！\n\n今勢いのある人（たくさん解いてる人）も紹介しちゃうよ！');
 
       moreMotivatedUsers.forEach(moreMotivatedUser => {
         postMessage(`*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`);
