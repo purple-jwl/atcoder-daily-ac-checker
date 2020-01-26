@@ -120,11 +120,8 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
       // 同じ問題の提出なら最新のやつを選ぶ
       let updated = false;
       acSubmissions = acSubmissions.map(acSubmission => {
-        if (acSubmission.problem_id === submission.problem_id
-          && acSubmission.contest_id === submission.contest_id
-          && acSubmission.id < submission.id
-        ) {
-          acSubmission.id = submission.id;
+        if (acSubmission.problem_id === submission.problem_id) {
+          acSubmission.id = Math.max(acSubmission.id, submission.id);
           updated = true;
         }
 
