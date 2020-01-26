@@ -2,7 +2,7 @@
 
 [AtCoder](https://atcoder.jp/)で前日にACした人やたくさんACしている人をSlack上で褒める（紹介する）ためのツールです。
 
-![通知サンプル](img/sample.png)
+![通知サンプル](img/sample1.png)
 
 ## セットアップ
 
