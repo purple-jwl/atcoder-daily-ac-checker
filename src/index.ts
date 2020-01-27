@@ -62,16 +62,17 @@ function main(): void {
       postMessage(messages.join('\n'));
     });
 
-    postMessage('以上です。\n\nやってる！最高！引き続きやっていきましょう:fire:');
+    postMessage('やってる！最高！引き続きやっていきましょう:fire:');
 
     if (moreMotivatedUsers.length) {
-      postMessage('--\n\n...以上じゃなかった！\n\n今勢いのある人（たくさん解いてる人）も紹介しちゃうよ！');
+      postMessage('--\nおや、 *勢いのある人* がいるみたいだから一緒に紹介しちゃうよ！');
 
-      moreMotivatedUsers.forEach(moreMotivatedUser => {
-        postMessage(`*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`);
-      });
+      const message = moreMotivatedUsers.map(moreMotivatedUser => {
+        return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
+      }).join('\n');
+      postMessage(message);
 
-      postMessage('今度こそ以上です。\n\nめっちゃやってる！やばいね？最＆高！');
+      postMessage('めっちゃやってる！やばいね？最＆高！');
     }
   }
 }
