@@ -155,6 +155,16 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
     })
   });
 
+  result.sort((a, b) => {
+    if (a.submissions.length === b.submissions.length) {
+      if (a.atcoderId < b.atcoderId) return -1;
+      if (a.atcoderId > b.atcoderId) return 1;
+      return 0;
+    }
+
+    return b.submissions.length - a.submissions.length;
+  });
+
   return result;
 }
 
