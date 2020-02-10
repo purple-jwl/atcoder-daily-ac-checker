@@ -70,7 +70,7 @@ function main(): void {
     if (moreMotivatedUsers.length) {
       const messages = [];
 
-      messages.push('*今勢いのある人* を紹介するよ！');
+      messages.push('*今* 勢いのある人を紹介するよ！');
 
       messages.push(moreMotivatedUsers.map(moreMotivatedUser => {
         return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
