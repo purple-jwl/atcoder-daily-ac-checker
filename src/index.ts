@@ -44,9 +44,9 @@ function main(): void {
   const atcoderIds: string[] = data.map(row => row[0].trim());
 
   const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds, targetDate);
+  const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
 
   if (motivatedUsers.length) {
-    const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
     const messages = [];
 
     messages.push(`*${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
@@ -66,20 +66,20 @@ function main(): void {
     messages.push('やってる！最高！引き続きやっていきましょう:fire:');
 
     postMessage(messages);
+  }
 
-    if (moreMotivatedUsers.length) {
-      const messages = [];
+  if (moreMotivatedUsers.length) {
+    const messages = [];
 
-      messages.push('*今* 勢いのある人を紹介するよ！');
+    messages.push('*今* 勢いのある人を紹介するよ！');
 
-      messages.push(moreMotivatedUsers.map(moreMotivatedUser => {
-        return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
-      }).join('\n'));
+    messages.push(moreMotivatedUsers.map(moreMotivatedUser => {
+      return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
+    }).join('\n'));
 
-      messages.push('めっちゃやってる！やばいね？最＆高！');
+    messages.push('めっちゃやってる！やばいね？最＆高！');
 
-      postMessage(messages);
-    }
+    postMessage(messages);
   }
 }
 
