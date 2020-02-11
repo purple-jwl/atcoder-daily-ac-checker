@@ -47,32 +47,38 @@ function main(): void {
 
   if (motivatedUsers.length) {
     const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
+    const messages = [];
 
-    postMessage(`こんにちは！ *${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
+    messages.push(`*${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
 
     motivatedUsers.forEach((motivatedUser: MotivatedUser) => {
       if (motivatedUser.submissions.length === 0) return;
 
-      const messages = [];
-      messages.push(`*${motivatedUser.atcoderId}*`);
-      messages.push(...(motivatedUser.submissions.map(submission => {
+      const tmpMessages = [];
+      tmpMessages.push(`*${motivatedUser.atcoderId}*`);
+      tmpMessages.push(...(motivatedUser.submissions.map(submission => {
         return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード>`
       })));
 
-      postMessage(messages.join('\n'));
+      messages.push(tmpMessages.join('\n'));
     });
 
-    postMessage('やってる！最高！引き続きやっていきましょう:fire:');
+    messages.push('やってる！最高！引き続きやっていきましょう:fire:');
+
+    postMessage(messages);
 
     if (moreMotivatedUsers.length) {
-      postMessage('--\nおや、 *勢いのある人* がいるみたいだから一緒に紹介しちゃうよ！');
+      const messages = [];
 
-      const message = moreMotivatedUsers.map(moreMotivatedUser => {
+      messages.push('*今* 勢いのある人を紹介するよ！');
+
+      messages.push(moreMotivatedUsers.map(moreMotivatedUser => {
         return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
-      }).join('\n');
-      postMessage(message);
+      }).join('\n'));
 
-      postMessage('めっちゃやってる！やばいね？最＆高！');
+      messages.push('めっちゃやってる！やばいね？最＆高！');
+
+      postMessage(messages);
     }
   }
 }
@@ -81,7 +87,11 @@ function hello(): void {
   postMessage('こんにちは！僕の名前はAC褒め太郎。競プロを楽しんでる人を応援するよ！');
 }
 
-function postMessage(message: string): void {
+function postMessage(messages: string | string[]): void {
+  if (typeof messages === 'string') {
+    messages = [messages];
+  }
+
   const webhookUrl = PropertiesService.getScriptProperties().getProperty('WEBHOOK_URL');
   UrlFetchApp.fetch(webhookUrl, {
     method: 'post',
@@ -89,7 +99,15 @@ function postMessage(message: string): void {
     payload: JSON.stringify({
       username: 'AC褒め太郎',
       icon_url: 'https://raw.githubusercontent.com/purple-jwl/atcoder-daily-ac-checker/master/img/icon.png',
-      text: message
+      blocks: messages.map(message => {
+        return {
+          'type': 'section',
+          'text': {
+            'type': 'mrkdwn',
+            'text': message
+          }
+        }
+      })
     })
   });
 
