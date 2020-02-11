@@ -244,6 +244,16 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
 
   sheet.getRange(2, 1, data.length, sheet.getLastColumn()).setValues(data);
 
+  result.sort((a, b) => {
+    if (a.targetAcceptedCount === b.targetAcceptedCount) {
+      if (a.atcoderId < b.atcoderId) return -1;
+      if (a.atcoderId > b.atcoderId) return 1;
+      return 0;
+    }
+
+    return b.targetAcceptedCount - a.targetAcceptedCount;
+  });
+
   return result;
 }
 
