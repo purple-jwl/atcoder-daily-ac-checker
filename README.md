@@ -38,7 +38,7 @@ __※このツールは1日1回スクリプトを動かす想定で作られて�
 
   | （例）管理表 | （例）AC記録用 |
   | :-: | :-: |
-  | ![管理表サンプル](img/sample2.png) | ![AC記録用サンプル](img/sample3.png) |
+  | ![管理表サンプル](img/sample1.png) | ![AC記録用サンプル](img/sample2.png) |
 - Google Apps Scriptのエディタ画面で以下の環境変数を設定します（ファイル > プロジェクトのプロパティ > スクリプトのプロパティ）
   - WEBHOOK_URL : SlackのIncoming Webhook URL
   - SHEET_ID : 先ほど作成したスプレッドシートのシートID
