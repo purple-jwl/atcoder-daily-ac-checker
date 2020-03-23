@@ -1,114 +1,85 @@
 interface MotivatedUser {
-  atcoderId: string,
-  submissions: AcSubmission[]
+  atcoderId: string;
+  submissions: AcSubmission[];
 }
 
 interface MoreMotivatedUser {
-  atcoderId: string,
-  targetAcceptedCount: number
+  atcoderId: string;
+  targetAcceptedCount: number;
 }
 
 interface AcSubmission {
-  id: number
-  problem_id: string,
-  contest_id: string,
-  title: string
+  id: number;
+  problem_id: string;
+  contest_id: string;
+  title: string;
 }
 
 interface Submission {
-  id: number,
-  epoch_second: number,
-  problem_id: string,
-  contest_id: string,
-  user_id: string,
-  language: string,
-  point: number,
-  length: number,
-  result: string,
-  execution_time: number
+  id: number;
+  epoch_second: number;
+  problem_id: string;
+  contest_id: string;
+  user_id: string;
+  language: string;
+  point: number;
+  length: number;
+  result: string;
+  execution_time: number;
 }
 
 interface Problem {
-  id: string,
-  contest_id: string,
-  title: string
+  id: string;
+  contest_id: string;
+  title: string;
 }
 
-function main(): void {
-  const targetDate = getTargetDate();
+function getAtcoderProblems(): Problem[] {
+  const url = "https://kenkoooo.com/atcoder/resources/problems.json";
+  const response = UrlFetchApp.fetch(url, {
+    method: "get",
+    contentType: "application/json",
+    muteHttpExceptions: true,
+  });
 
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('管理表');
-  const data = sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 1);
-
-  const atcoderIds: string[] = data.map(row => row[0].trim());
-
-  const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds, targetDate);
-  const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
-
-  if (motivatedUsers.length) {
-    const messages = [];
-
-    messages.push(`*${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`);
-
-    motivatedUsers.forEach((motivatedUser: MotivatedUser) => {
-      if (motivatedUser.submissions.length === 0) return;
-
-      const tmpMessages = [];
-      tmpMessages.push(`*${motivatedUser.atcoderId}*`);
-      tmpMessages.push(...(motivatedUser.submissions.map(submission => {
-        return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード>`
-      })));
-
-      messages.push(tmpMessages.join('\n'));
-    });
-
-    messages.push('やってる！最高！引き続きやっていきましょう:fire:');
-
-    postMessage(messages);
-  }
-
-  if (moreMotivatedUsers.length) {
-    const messages = [];
-
-    messages.push('*今* 勢いのある人を紹介するよ！');
-
-    messages.push(moreMotivatedUsers.map(moreMotivatedUser => {
-      return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
-    }).join('\n'));
-
-    messages.push('めっちゃやってる！やばいね？最＆高！');
-
-    postMessage(messages);
-  }
+  return JSON.parse(response.getContentText());
 }
 
-function hello(): void {
-  postMessage('こんにちは！僕の名前はAC褒め太郎。競プロを楽しんでる人を応援するよ！');
+function getFormattedDate(date: Date): string {
+  return Utilities.formatDate(date, "JST", "yyyy-MM-dd");
+}
+
+/**
+ * 前日の日付を取得
+ */
+function getTargetDate(): string {
+  const today = new Date();
+
+  return getFormattedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1));
 }
 
 function postMessage(messages: string | string[]): void {
-  if (typeof messages === 'string') {
+  if (typeof messages === "string") {
     messages = [messages];
   }
 
-  const webhookUrl = PropertiesService.getScriptProperties().getProperty('WEBHOOK_URL');
+  const webhookUrl = PropertiesService.getScriptProperties().getProperty("WEBHOOK_URL");
   UrlFetchApp.fetch(webhookUrl, {
-    method: 'post',
+    method: "post",
     muteHttpExceptions: true,
     payload: JSON.stringify({
-      username: 'AC褒め太郎',
-      icon_url: 'https://raw.githubusercontent.com/purple-jwl/atcoder-daily-ac-checker/master/img/icon.png',
-      blocks: messages.map(message => {
+      username: "AC褒め太郎",
+      icon_url: "https://raw.githubusercontent.com/purple-jwl/atcoder-daily-ac-checker/master/img/icon.png",
+      blocks: messages.map((message) => {
         return {
-          'type': 'section',
-          'text': {
-            'type': 'mrkdwn',
-            'text': message
-          }
-        }
-      })
-    })
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: message,
+          },
+        };
+      }),
+    }),
   });
 
   Utilities.sleep(500);
@@ -118,14 +89,14 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
   const atcoderProblems = getAtcoderProblems();
   const result: MotivatedUser[] = [];
 
-  atcoderIds.forEach(atcoderId => {
-    if (atcoderId === '') return;
+  atcoderIds.forEach((atcoderId) => {
+    if (atcoderId === "") return;
 
     const url = `https://kenkoooo.com/atcoder/atcoder-api/results?user=${atcoderId}`;
     const response = UrlFetchApp.fetch(url, {
-      method: 'get',
-      contentType: 'application/json',
-      muteHttpExceptions: true
+      method: "get",
+      contentType: "application/json",
+      muteHttpExceptions: true,
     });
 
     if (response.getResponseCode() !== 200) return;
@@ -134,11 +105,11 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
     JSON.parse(response.getContentText()).forEach((submission: Submission) => {
       const submissionDate = getFormattedDate(new Date(submission.epoch_second * 1000));
 
-      if ((submissionDate !== targetDate) || (submission.result !== 'AC')) return;
+      if (submissionDate !== targetDate || submission.result !== "AC") return;
 
       // 同じ問題の提出なら最新のやつを選ぶ
       let updated = false;
-      acSubmissions = acSubmissions.map(acSubmission => {
+      acSubmissions = acSubmissions.map((acSubmission) => {
         if (acSubmission.problem_id === submission.problem_id) {
           acSubmission.id = Math.max(acSubmission.id, submission.id);
           updated = true;
@@ -156,7 +127,7 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
           id: submission.id,
           problem_id: submission.problem_id,
           contest_id: submission.contest_id,
-          title: problem.title
+          title: problem.title,
         });
       }
     });
@@ -169,8 +140,8 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
 
     result.push({
       atcoderId: atcoderId,
-      submissions: acSubmissions
-    })
+      submissions: acSubmissions,
+    });
   });
 
   result.sort((a, b) => {
@@ -187,20 +158,20 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
 }
 
 function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
-  const checkMark = '✅';
+  const checkMark = "✅";
 
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('AC記録用');
+  const sheetId = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName("AC記録用");
   const data = sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn());
   const masterData = data.shift();
 
   const result: MoreMotivatedUser[] = [];
-  atcoderIds.forEach(atcoderId => {
+  atcoderIds.forEach((atcoderId) => {
     const url = `https://kenkoooo.com/atcoder/atcoder-api/v2/user_info?user=${atcoderId}`;
     const response = UrlFetchApp.fetch(url, {
-      method: 'get',
-      contentType: 'application/json',
-      muteHttpExceptions: true
+      method: "get",
+      contentType: "application/json",
+      muteHttpExceptions: true,
     });
 
     if (response.getResponseCode() !== 200) return;
@@ -215,7 +186,7 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
 
       for (let j = 1; j < masterData.length; j++) {
         const targetAcceptedCount: number = masterData[j];
-        if (data[i][j] === '' && targetAcceptedCount <= currentAcceptedCount) {
+        if (data[i][j] === "" && targetAcceptedCount <= currentAcceptedCount) {
           updatedMaxTargetAcceptedCount = Math.max(updatedMaxTargetAcceptedCount, targetAcceptedCount);
           data[i][j] = checkMark;
         }
@@ -229,7 +200,7 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
       const d = [atcoderId];
       for (let j = 1; j < masterData.length; j++) {
         const targetAcceptedCount: number = masterData[j];
-        d.push((targetAcceptedCount <= currentAcceptedCount) ? checkMark : '');
+        d.push(targetAcceptedCount <= currentAcceptedCount ? checkMark : "");
       }
       data.push(d);
     }
@@ -237,8 +208,8 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
     if (updatedMaxTargetAcceptedCount !== -1) {
       result.push({
         atcoderId: atcoderId,
-        targetAcceptedCount: updatedMaxTargetAcceptedCount
-      })
+        targetAcceptedCount: updatedMaxTargetAcceptedCount,
+      });
     }
   });
 
@@ -257,28 +228,65 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
   return result;
 }
 
-function getAtcoderProblems(): Problem[] {
-  const url = 'https://kenkoooo.com/atcoder/resources/problems.json';
-  const response = UrlFetchApp.fetch(url, {
-    method: 'get',
-    contentType: 'application/json',
-    muteHttpExceptions: true
-  });
+function main(): void {
+  const targetDate = getTargetDate();
 
-  return JSON.parse(response.getContentText());
+  const sheetId = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName("管理表");
+  const data = sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 1);
+
+  const atcoderIds: string[] = data.map((row) => row[0].trim());
+
+  const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds, targetDate);
+  const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
+
+  if (motivatedUsers.length) {
+    const messages = [];
+
+    messages.push(
+      `*${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`
+    );
+
+    motivatedUsers.forEach((motivatedUser: MotivatedUser) => {
+      if (motivatedUser.submissions.length === 0) return;
+
+      const tmpMessages = [];
+      tmpMessages.push(`*${motivatedUser.atcoderId}*`);
+      tmpMessages.push(
+        ...motivatedUser.submissions.map((submission) => {
+          return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード>`;
+        })
+      );
+
+      messages.push(tmpMessages.join("\n"));
+    });
+
+    messages.push("やってる！最高！引き続きやっていきましょう:fire:");
+
+    postMessage(messages);
+  }
+
+  if (moreMotivatedUsers.length) {
+    const messages = [];
+
+    messages.push("*今* 勢いのある人を紹介するよ！");
+
+    messages.push(
+      moreMotivatedUsers
+        .map((moreMotivatedUser) => {
+          return `*${moreMotivatedUser.atcoderId}* ㊗️ *${moreMotivatedUser.targetAcceptedCount}* AC達成 👏`;
+        })
+        .join("\n")
+    );
+
+    messages.push("めっちゃやってる！やばいね？最＆高！");
+
+    postMessage(messages);
+  }
 }
 
-/**
- * 前日の日付を取得
- */
-function getTargetDate(): string {
-  const today = new Date();
-
-  return getFormattedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1));
-}
-
-function getFormattedDate(date: Date): string {
-  return Utilities.formatDate(date, 'JST', 'yyyy-MM-dd');
+function hello(): void {
+  postMessage("こんにちは！僕の名前はAC褒め太郎。競プロを楽しんでる人を応援するよ！");
 }
 
 function p(v: any): void {
