@@ -132,16 +132,18 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
       }
     });
 
-    acSubmissions.sort((a, b) => {
-      if (a.title < b.title) return -1;
-      if (a.title > b.title) return 1;
-      return 0;
-    });
+    if (acSubmissions.length) {
+      acSubmissions.sort((a, b) => {
+        if (a.title < b.title) return -1;
+        if (a.title > b.title) return 1;
+        return 0;
+      });
 
-    result.push({
-      atcoderId: atcoderId,
-      submissions: acSubmissions,
-    });
+      result.push({
+        atcoderId: atcoderId,
+        submissions: acSubmissions,
+      });
+    }
   });
 
   result.sort((a, b) => {
