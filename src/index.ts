@@ -45,17 +45,25 @@ function getAtcoderProblems(): Problem[] {
   return JSON.parse(response.getContentText());
 }
 
-function getFormattedDate(date: Date): string {
+function getFormattedDateString(date: Date): string {
   return Utilities.formatDate(date, "JST", "yyyy-MM-dd");
 }
 
 /**
  * 前日の日付を取得
  */
-function getTargetDate(): string {
+function getTargetDate(): Date {
   const today = new Date();
 
-  return getFormattedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1));
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+}
+
+function getTargetDateString(): string {
+  return getFormattedDateString(getTargetDate());
+}
+
+function getFromEpochSecond(): number {
+  return getTargetDate().getTime() / 1000;
 }
 
 function postMessage(messages: string | string[]): void {
@@ -85,14 +93,16 @@ function postMessage(messages: string | string[]): void {
   Utilities.sleep(500);
 }
 
-function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedUser[] {
+function getMotivatedUsers(atcoderIds: string[]): MotivatedUser[] {
+  const targetDateString = getTargetDateString();
+  const fromEpochSecond = getFromEpochSecond();
   const atcoderProblems = getAtcoderProblems();
   const result: MotivatedUser[] = [];
 
   atcoderIds.forEach((atcoderId) => {
     if (atcoderId === "") return;
 
-    const url = `https://kenkoooo.com/atcoder/atcoder-api/results?user=${atcoderId}`;
+    const url = `https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=${atcoderId}&from_second=${fromEpochSecond}`;
     const response = UrlFetchApp.fetch(url, {
       method: "get",
       contentType: "application/json",
@@ -103,9 +113,9 @@ function getMotivatedUsers(atcoderIds: string[], targetDate: string): MotivatedU
 
     let acSubmissions: AcSubmission[] = [];
     JSON.parse(response.getContentText()).forEach((submission: Submission) => {
-      const submissionDate = getFormattedDate(new Date(submission.epoch_second * 1000));
+      const submissionDateString = getFormattedDateString(new Date(submission.epoch_second * 1000));
 
-      if (submissionDate !== targetDate || submission.result !== "AC") return;
+      if (submissionDateString !== targetDateString || submission.result !== "AC") return;
 
       // 同じ問題の提出なら最新のやつを選ぶ
       let updated = false;
@@ -231,7 +241,7 @@ function getMoreMotivatedUsers(atcoderIds: string[]): MoreMotivatedUser[] {
 }
 
 function main(): void {
-  const targetDate = getTargetDate();
+  const targetDateString = getTargetDateString();
 
   const sheetId = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
   const sheet = SpreadsheetApp.openById(sheetId).getSheetByName("管理表");
@@ -239,14 +249,14 @@ function main(): void {
 
   const atcoderIds: string[] = data.map((row) => row[0].trim());
 
-  const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds, targetDate);
+  const motivatedUsers: MotivatedUser[] = getMotivatedUsers(atcoderIds);
   const moreMotivatedUsers: MoreMotivatedUser[] = getMoreMotivatedUsers(atcoderIds);
 
   if (motivatedUsers.length) {
     const messages = [];
 
     messages.push(
-      `*${targetDate}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`
+      `*${targetDateString}* にACした人を紹介するよ！（通知設定は<https://docs.google.com/spreadsheets/d/${sheetId}/|こちら>）`
     );
 
     motivatedUsers.forEach((motivatedUser: MotivatedUser) => {
