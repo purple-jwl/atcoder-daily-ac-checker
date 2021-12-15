@@ -62,6 +62,10 @@ function getTargetDateString(): string {
   return getFormattedDateString(getTargetDate());
 }
 
+function getFromEpochSecond(): number {
+  return getTargetDate().getTime() / 1000;
+}
+
 function postMessage(messages: string | string[]): void {
   if (typeof messages === "string") {
     messages = [messages];
@@ -91,13 +95,14 @@ function postMessage(messages: string | string[]): void {
 
 function getMotivatedUsers(atcoderIds: string[]): MotivatedUser[] {
   const targetDateString = getTargetDateString();
+  const fromEpochSecond = getFromEpochSecond();
   const atcoderProblems = getAtcoderProblems();
   const result: MotivatedUser[] = [];
 
   atcoderIds.forEach((atcoderId) => {
     if (atcoderId === "") return;
 
-    const url = `https://kenkoooo.com/atcoder/atcoder-api/results?user=${atcoderId}`;
+    const url = `https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=${atcoderId}&from_second=${fromEpochSecond}`;
     const response = UrlFetchApp.fetch(url, {
       method: "get",
       contentType: "application/json",
