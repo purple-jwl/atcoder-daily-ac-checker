@@ -13,6 +13,7 @@ interface AcSubmission {
   problem_id: string;
   contest_id: string;
   title: string;
+  language: string;
 }
 
 interface Submission {
@@ -117,10 +118,10 @@ function getMotivatedUsers(atcoderIds: string[]): MotivatedUser[] {
 
       if (submissionDateString !== targetDateString || submission.result !== "AC") return;
 
-      // 同じ問題の提出なら最新のやつを選ぶ
+      // 同じ問題かつ同じ言語での提出なら最新のやつを選ぶ
       let updated = false;
       acSubmissions = acSubmissions.map((acSubmission) => {
-        if (acSubmission.problem_id === submission.problem_id) {
+        if (acSubmission.problem_id === submission.problem_id && acSubmission.language === submission.language) {
           acSubmission.id = Math.max(acSubmission.id, submission.id);
           updated = true;
         }
@@ -138,14 +139,15 @@ function getMotivatedUsers(atcoderIds: string[]): MotivatedUser[] {
           problem_id: submission.problem_id,
           contest_id: submission.contest_id,
           title: problem.title,
+          language: submission.language,
         });
       }
     });
 
     if (acSubmissions.length) {
       acSubmissions.sort((a, b) => {
-        if (a.title < b.title) return -1;
-        if (a.title > b.title) return 1;
+        if (a.title !== b.title) return a.title < b.title ? -1 : 1;
+        if (a.language !== b.language) return a.language < b.language ? -1 : 1;
         return 0;
       });
 
