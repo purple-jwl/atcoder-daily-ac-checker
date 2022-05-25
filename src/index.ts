@@ -268,7 +268,7 @@ function main(): void {
       tmpMessages.push(`*${motivatedUser.atcoderId}*`);
       tmpMessages.push(
         ...motivatedUser.submissions.map((submission) => {
-          return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード>`;
+          return `- <https://atcoder.jp/contests/${submission.contest_id}/tasks/${submission.problem_id}|${submission.title}> | <https://atcoder.jp/contests/${submission.contest_id}/submissions/${submission.id}|提出コード ${submission.language}>`;
         })
       );
 
